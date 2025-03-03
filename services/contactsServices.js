@@ -1,44 +1,35 @@
-import { readFile, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
-import { nanoid } from "nanoid";
-
-const contactsPath = resolve("db", "contacts.json");
+import Contact from "../db/models/contact.js";
 
 const listContacts = async () => {
-	const data = await readFile(contactsPath);
-	return JSON.parse(data);
+	return await Contact.findAll();
 };
 
 const getContactById = async (contactId) => {
-	const contacts = await listContacts();
-	return contacts.find(({ id }) => id === contactId) || null;
+	return await Contact.findByPk(contactId);
 };
 
 const addContact = async (contact) => {
-	const contacts = await listContacts();
-	const newContact = { ...contact, id: nanoid() };
-	contacts.push(newContact);
-	await writeFile(contactsPath, JSON.stringify(contacts));
-	return newContact;
+	return await Contact.create(contact);
+};
+
+const updateContact = async (contactId, newData) => {
+	const contact = await Contact.findByPk(contactId);
+	if (!contact) return null;
+	return await contact.update(newData);
 };
 
 const removeContact = async (contactId) => {
-	const contacts = await listContacts();
-	const index = contacts.findIndex(({ id }) => id === contactId);
-	if (index === -1) return null;
-	const [removedContact] = contacts.splice(index, 1);
-	await writeFile(contactsPath, JSON.stringify(contacts));
-	return removedContact;
+	const contact = await Contact.findByPk(contactId);
+	if (!contact) return null;
+	await contact.destroy();
+	return contact;
 };
 
-const updateContact = async (contactId, data) => {
-	const contacts = await listContacts();
-	const index = contacts.findIndex(({ id }) => id === contactId);
-	if (index === -1) return null;
-	const updatedContact = { ...contacts[index], ...data };
-	contacts[index] = updatedContact;
-	await writeFile(contactsPath, JSON.stringify(contacts));
-	return updatedContact;
+const updateStatusContact = async (contactId, { favorite }) => {
+	const contact = await Contact.findByPk(contactId);
+	if (!contact) return null;
+	return await contact.update({ favorite });
 };
 
 export default {
@@ -47,4 +38,5 @@ export default {
 	addContact,
 	removeContact,
 	updateContact,
+	updateStatusContact,
 };

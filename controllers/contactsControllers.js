@@ -41,3 +41,22 @@ export const updateContact = async (req, res) => {
 
 	res.json(updatedContact);
 };
+
+export const favoriteContact = async (req, res) => {
+	const { contactId } = req.params;
+	const { favorite } = req.body;
+
+	if (typeof favorite !== "boolean") {
+		throw HttpError(400, "Missing or invalid 'favorite' field");
+	}
+
+	const updatedContact = await contactsService.updateStatusContact(contactId, {
+		favorite,
+	});
+
+	if (!updatedContact) {
+		throw HttpError(404, `Contact with id=${contactId} not found`);
+	}
+
+	res.status(200).json(updatedContact);
+};
