@@ -1,33 +1,25 @@
 import { resolve } from "node:path";
 import Contact from "../db/models/contact.js";
 
-const listContacts = async () => {
-	return await Contact.findAll();
-};
+const listContacts = () => Contact.findAll();
 
-const getContactById = async (contactId) => {
-	return await Contact.findByPk(contactId);
-};
+const getContactById = (contactId) => Contact.findByPk(contactId);
 
-const addContact = async (contact) => {
-	return await Contact.create(contact);
-};
+const addContact = (contact) => Contact.create(contact);
 
 const updateContact = async (contactId, newData) => {
-	const contact = await Contact.findByPk(contactId);
+	const contact = await getContactById(contactId);
 	if (!contact) return null;
-	return await contact.update(newData);
+	return await contact.update(newData, { returning: true });
 };
 
-const removeContact = async (contactId) => {
-	const contact = await Contact.findByPk(contactId);
-	if (!contact) return null;
-	await contact.destroy();
-	return contact;
-};
+const removeContact = (contactId) =>
+	Contact.destroy({
+		where: { id: contactId },
+	});
 
 const updateStatusContact = async (contactId, { favorite }) => {
-	const contact = await Contact.findByPk(contactId);
+	const contact = await getContactById(contactId);
 	if (!contact) return null;
 	return await contact.update({ favorite });
 };
