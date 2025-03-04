@@ -1,5 +1,4 @@
-import { resolve } from "node:path";
-import Contact from "../db/models/contact.js";
+import Contact from "../db/models/Contact.js";
 
 const listContacts = () => Contact.findAll();
 
