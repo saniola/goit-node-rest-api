@@ -20,6 +20,7 @@ export const getOneContact = async (req, res) => {
 export const deleteContact = async (req, res) => {
 	const { id } = req.params;
 	const removedContact = await contactsService.removeContact(id);
+
 	if (!removedContact) {
 		throw HttpError(404, `Contact with id=${id} not found`);
 	}
@@ -34,7 +35,13 @@ export const createContact = async (req, res) => {
 
 export const updateContact = async (req, res) => {
 	const { id } = req.params;
+
+	if (!req.body) {
+		throw HttpError(400, "Data to update can not be empty");
+	}
+
 	const updatedContact = await contactsService.updateContact(id, req.body);
+
 	if (!updatedContact) {
 		throw HttpError(404, `Contact with id=${id} not found`);
 	}
@@ -47,7 +54,7 @@ export const favoriteContact = async (req, res) => {
 	const { favorite } = req.body;
 
 	if (typeof favorite !== "boolean") {
-		throw HttpError(400, "Missing or invalid 'favorite' field");
+		throw HttpError(400, "Expected field favorite is boolean");
 	}
 
 	const updatedContact = await contactsService.updateStatusContact(contactId, {
