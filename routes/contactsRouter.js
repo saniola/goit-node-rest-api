@@ -5,6 +5,7 @@ import {
 	deleteContact,
 	createContact,
 	updateContact,
+	favoriteContact,
 } from "../controllers/contactsControllers.js";
 import { ctrlWrapper } from "../decorators/ctrlWrapper.js";
 import { validateBody } from "../decorators/validateBody.js";
@@ -32,5 +33,7 @@ contactsRouter.put(
 	validateBody(updateContactSchema),
 	ctrlWrapper(updateContact),
 );
+
+contactsRouter.patch("/:contactId/favorite", ctrlWrapper(favoriteContact));
 
 export default contactsRouter;
