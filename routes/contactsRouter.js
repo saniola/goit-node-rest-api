@@ -12,9 +12,13 @@ import { validateBody } from "../decorators/validateBody.js";
 import {
 	createContactSchema,
 	updateContactSchema,
+	updateFavoriteContactSchema,
 } from "../schemas/contactsSchemas.js";
+import authenticate from "../middleware/authenticate.js";
 
 const contactsRouter = express.Router();
+
+contactsRouter.use(authenticate);
 
 contactsRouter.get("/", ctrlWrapper(getAllContacts));
 
@@ -34,6 +38,10 @@ contactsRouter.put(
 	ctrlWrapper(updateContact),
 );
 
-contactsRouter.patch("/:contactId/favorite", ctrlWrapper(favoriteContact));
+contactsRouter.patch(
+	"/:contactId/favorite",
+	validateBody(updateFavoriteContactSchema),
+	ctrlWrapper(favoriteContact),
+);
 
 export default contactsRouter;

@@ -1,15 +1,19 @@
 import contactsService from "../services/contactsServices.js";
 import HttpError from "../helpers/HttpError.js";
 
-export const getAllContacts = async (_, res) => {
-	const contacts = await contactsService.listContacts();
+export const getAllContacts = async (req, res) => {
+	const { id: owner } = req.user;
+
+	const contacts = await contactsService.listContacts({ owner });
 
 	res.json(contacts);
 };
 
 export const getOneContact = async (req, res) => {
+	const { id: owner } = req.user;
 	const { id } = req.params;
-	const contact = await contactsService.getContactById(id);
+	const contact = await contactsService.getContact({ id, owner });
+
 	if (!contact) {
 		throw HttpError(404, `Contact with id=${id} not found`);
 	}
@@ -18,8 +22,10 @@ export const getOneContact = async (req, res) => {
 };
 
 export const deleteContact = async (req, res) => {
+	const { id: owner } = req.user;
 	const { id } = req.params;
-	const removedContact = await contactsService.removeContact(id);
+
+	const removedContact = await contactsService.removeContact({ id, owner });
 
 	if (!removedContact) {
 		throw HttpError(404, `Contact with id=${id} not found`);
@@ -29,18 +35,25 @@ export const deleteContact = async (req, res) => {
 };
 
 export const createContact = async (req, res) => {
-	const newContact = await contactsService.addContact(req.body);
+	const { id: owner } = req.user;
+
+	const newContact = await contactsService.addContact({ ...req.body, owner });
+
 	res.status(201).json(newContact);
 };
 
 export const updateContact = async (req, res) => {
-	const { id } = req.params;
-
 	if (!req.body) {
 		throw HttpError(400, "Data to update can not be empty");
 	}
 
-	const updatedContact = await contactsService.updateContact(id, req.body);
+	const { id: owner } = req.user;
+	const { id } = req.params;
+
+	const updatedContact = await contactsService.updateContact(
+		{ id, owner },
+		req.body,
+	);
 
 	if (!updatedContact) {
 		throw HttpError(404, `Contact with id=${id} not found`);
@@ -52,14 +65,18 @@ export const updateContact = async (req, res) => {
 export const favoriteContact = async (req, res) => {
 	const { contactId } = req.params;
 	const { favorite } = req.body;
+	const { id: owner } = req.user;
 
 	if (typeof favorite !== "boolean") {
 		throw HttpError(400, "Expected field favorite is boolean");
 	}
 
-	const updatedContact = await contactsService.updateStatusContact(contactId, {
-		favorite,
-	});
+	const updatedContact = await contactsService.updateStatusContact(
+		{ id, owner },
+		{
+			favorite,
+		},
+	);
 
 	if (!updatedContact) {
 		throw HttpError(404, `Contact with id=${contactId} not found`);
