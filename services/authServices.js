@@ -1,7 +1,8 @@
 import User from "../db/models/User.js";
+import gravatar from "gravatar";
 
 async function update(query, data) {
-	const user = await findUser(query);
+	const user = await find(query);
 	if (!user) {
 		return null;
 	}
@@ -15,9 +16,14 @@ export async function find(query) {
 }
 
 export function register({ email, password }) {
-	return User.create({ email, password });
+	const avatarURL = gravatar.url(email);
+	return User.create({ email, password, avatarURL });
 }
 
 export async function logout(id) {
 	return update({ id }, { token: null });
+}
+
+export async function updateAvatar(id, avatarURL) {
+	return update({ id }, { avatarURL });
 }

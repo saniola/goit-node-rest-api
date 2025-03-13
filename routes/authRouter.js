@@ -8,7 +8,9 @@ import {
 	login,
 	logout,
 	current,
+	uploadAvatar,
 } from "../controllers/authControllers.js";
+import upload from "../middleware/upload.js";
 
 const authRouter = express.Router();
 
@@ -23,5 +25,12 @@ authRouter.post("/login", validateBody(loginSchema), ctrlWrapper(login));
 authRouter.get("/current", authenticate, ctrlWrapper(current));
 
 authRouter.post("/logout", authenticate, ctrlWrapper(logout));
+
+authRouter.patch(
+	"/avatars",
+	authenticate,
+	upload.single("avatar"),
+	ctrlWrapper(uploadAvatar),
+);
 
 export default authRouter;

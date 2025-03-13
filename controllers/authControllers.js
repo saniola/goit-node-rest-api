@@ -1,8 +1,12 @@
 import bcrypt from "bcryptjs";
+import fs from "node:fs/promises";
+import path from "node:path";
 
 import * as authServices from "../services/authServices.js";
 import HttpError from "../helpers/HttpError.js";
 import { createToken } from "../helpers/jwt.js";
+
+const avatarsPath = path.resolve("public", "avatars");
 
 export async function register(req, res) {
 	const user = await authServices.find({ email: req.body.email });
@@ -67,5 +71,18 @@ export async function logout(req, res) {
 
 	res.status(204).json({
 		message: "Logged out",
+	});
+}
+
+export async function uploadAvatar(req, res) {
+	const { id } = req.user;
+	const { path: oldPath, filename } = req.file;
+	const newPath = path.join(avatarsPath, filename);
+
+	await fs.rename(oldPath, newPath);
+	await authServices.updateAvatar(id, newPath);
+
+	res.json({
+		avatarURL: newPath,
 	});
 }
