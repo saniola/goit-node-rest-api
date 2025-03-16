@@ -81,14 +81,26 @@ export async function logout(req, res) {
 
 export async function uploadAvatar(req, res) {
 	const { id } = req.user;
+
+	if (!req.file) {
+		throw HttpError(400, "Avatar file is required");
+	}
+
 	const { path: oldPath, filename } = req.file;
 	const newPath = path.join(avatarsPath, filename);
+	const avatarURL = `/avatars/${filename}`;
 
-	await fs.rename(oldPath, newPath);
-	await authServices.updateAvatar(id, newPath);
+	try {
+		await fs.rename(oldPath, newPath);
+	} catch (error) {
+		await fs.unlink(oldPath);
+		throw HttpError(500, "Failed to move avatar file");
+	}
+
+	await authServices.updateAvatar(id, avatarURL);
 
 	res.json({
-		avatarURL: newPath,
+		avatarURL,
 	});
 }
 
