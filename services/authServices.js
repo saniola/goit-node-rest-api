@@ -1,7 +1,7 @@
 import User from "../db/models/User.js";
 import gravatar from "gravatar";
 import { nanoid } from "nanoid";
-import sendEmail from "../helpers/sendEmail.js";
+import { sendEmail } from "../helpers/sendEmail.js";
 
 const { BASE_URL } = process.env;
 
