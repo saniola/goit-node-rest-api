@@ -21,6 +21,8 @@ export async function find(query) {
 
 export async function register({ email, password }) {
 	const verificationToken = nanoid();
+	const avatarURL = gravatar.url(email);
+
 	const newUser = await User.create({
 		email,
 		password,
