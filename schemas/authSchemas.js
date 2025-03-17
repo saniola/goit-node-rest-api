@@ -21,3 +21,7 @@ export const loginSchema = Joi.object({
 		"any.required": "Password is required",
 	}),
 });
+
+export const verifySchema = Joi.object({
+	email: Joi.string().required(),
+});
