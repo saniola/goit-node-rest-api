@@ -106,7 +106,7 @@ export async function uploadAvatar(req, res) {
 
 export async function verify(req, res) {
 	const { verificationToken } = req.params;
-	const user = await findUser({ verificationToken });
+	const user = await authServices.find({ verificationToken });
 
 	if (!user) {
 		throw HttpError(404, "User not found");
@@ -121,7 +121,7 @@ export async function verify(req, res) {
 
 export async function resendVerify(req, res) {
 	const { email } = req.body;
-	const user = await findUser({ email });
+	const user = await authServices.find({ email });
 
 	if (!user) {
 		throw HttpError(404, "User not found");
