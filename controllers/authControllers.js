@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import fs from "node:fs/promises";
 import path from "node:path";
+import { nanoid } from "nanoid";
 
 import * as authServices from "../services/authServices.js";
 import HttpError from "../helpers/HttpError.js";
@@ -35,6 +36,10 @@ export async function login(req, res) {
 
 	if (!user) {
 		throw HttpError(401, "Email or password is wrong");
+	}
+
+	if (!user.verified) {
+		throw HttpError(401, "Email is not verified");
 	}
 
 	const isValidPassword = await bcrypt.compare(
@@ -76,13 +81,62 @@ export async function logout(req, res) {
 
 export async function uploadAvatar(req, res) {
 	const { id } = req.user;
+
+	if (!req.file) {
+		throw HttpError(400, "Avatar file is required");
+	}
+
 	const { path: oldPath, filename } = req.file;
 	const newPath = path.join(avatarsPath, filename);
+	const avatarURL = `/avatars/${filename}`;
 
-	await fs.rename(oldPath, newPath);
-	await authServices.updateAvatar(id, newPath);
+	try {
+		await fs.rename(oldPath, newPath);
+	} catch (error) {
+		await fs.unlink(oldPath);
+		throw HttpError(500, "Failed to move avatar file");
+	}
+
+	await authServices.updateAvatar(id, avatarURL);
 
 	res.json({
-		avatarURL: newPath,
+		avatarURL,
+	});
+}
+
+export async function verify(req, res) {
+	const { verificationToken } = req.params;
+	const user = await authServices.find({ verificationToken });
+
+	if (!user) {
+		throw HttpError(404, "User not found");
+	}
+
+	await user.update({ verificationToken: null, verified: true });
+
+	res.status(200).json({
+		message: "Verification successful",
+	});
+}
+
+export async function resendVerify(req, res) {
+	const { email } = req.body;
+	const user = await authServices.find({ email });
+
+	if (!user) {
+		throw HttpError(404, "User not found");
+	}
+
+	if (user.verified) {
+		throw HttpError(400, "Verification has already been passed");
+	}
+
+	const verificationToken = nanoid();
+
+	await user.update({ verificationToken });
+	await authServices.resendVerify(email, verificationToken);
+
+	res.status(200).json({
+		message: "Verification email sent",
 	});
 }
