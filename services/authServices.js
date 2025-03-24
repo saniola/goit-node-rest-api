@@ -30,11 +30,15 @@ export async function register({ email, password }) {
 		verificationToken,
 	});
 
-	await sendEmail({
-		to: email,
-		subject: "Test email",
-		html: `<a target="_blank" href="${BASE_URL}/api/auth/verify/${verificationToken}">Click to verify</a>`,
-	});
+	try {
+		await sendEmail({
+			to: email,
+			subject: "Test email",
+			html: `<a target="_blank" href="${BASE_URL}/api/auth/verify/${verificationToken}">Click to verify</a>`,
+		});
+	} catch (error) {
+		console.log(error.message);
+	}
 
 	return newUser;
 }
